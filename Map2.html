@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Custom Map with Scaled and Transparent Markers</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .marker {
+            display: inline-block;
+            background-color: rgba(0, 0, 255, 0.5); /* Blue with 50% transparency */
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+    // Set your Mapbox access token here
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGZraW50bCIsImEiOiJjbHpyNTFvM2oxazFyMmtwbjV2cmp0MDZyIn0.l3nh0dpd5ibOQQHgUUBBxg';
+
+    // Initialize the map
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v10', // A light base map
+        center: [0, 20], // Centered at a global view
+        zoom: 1.5 // Zoomed out to show the entire globe
+    });
+
+    // Your data
+    var locations = [
+        { coordinates: [-61.8468, 17.1274], value: 3 },    // Saint John's, Antigua and Barbuda
+        { coordinates: [-58.3816, -34.6037], value: 3 },   // Buenos Aires, Argentina
+        { coordinates: [151.2093, -33.8688], value: 31 },  // Sydney, Australia
+        { coordinates: [115.8605, -31.9505], value: 26 },  // Perth, Australia
+        { coordinates: [145.0691, -37.842], value: 30 },   // Camberwell, Australia
+        { coordinates: [144.965, -37.842], value: 18 },    // Southbank, Australia
+        { coordinates: [149.13, -35.2809], value: 24 },    // Canberra, Australia
+        { coordinates: [153.0251, -27.4698], value: 17 },  // Brisbane, Australia
+        { coordinates: [138.6007, -34.9285], value: 11 },  // Adelaide, Australia
+        { coordinates: [145.7781, -16.9186], value: 6 },   // Cairns, Australia
+        { coordinates: [115.7439, -32.0569], value: 9 },   // Fremantle, Australia
+        { coordinates: [145.0356, -37.827], value: 5 },    // Hawthorn, Australia
+        { coordinates: [16.3738, 48.2082], value: 69 },    // Vienna, Austria
+        { coordinates: [14.5047, 48.5112], value: 36 },    // Freistadt, Austria
+        { coordinates: [90.4125, 23.8103], value: 97 },    // Dhaka, Bangladesh
+        { coordinates: [5.3378, 50.9302], value: 60 },     // Hasselt, Belgium
+        { coordinates: [4.4025, 51.2194], value: 6 },      // Antwerp, Belgium
+        { coordinates: [4.6918, 51.2399], value: 8 },      // Zandhoven, Belgium
+        { coordinates: [-43.9345, -19.9167], value: 8 },   // Belo Horizonte, Brazil
+        { coordinates: [-46.6333, -23.5505], value: 27 },  // São Paulo, Brazil
+        { coordinates: [-113.4938, 53.5461], value: 130 }, // Edmonton, Canada
+        { coordinates: [-71.2082, 46.8139], value: 73 },   // Québec City, Canada
+        { coordinates: [-81.2453, 42.9849], value: 51 },   // London, Canada
+        { coordinates: [-75.6972, 45.4215], value: 57 },   // Ottawa, Canada
+        { coordinates: [-79.3832, 43.6532], value: 44 },   // Toronto (West), Canada
+        { coordinates: [-106.67, 52.1332], value: 26 },    // Saskatoon, Canada
+        { coordinates: [-79.8711, 43.2557], value: 40 },   // Hamilton, Canada
+        { coordinates: [-114.0719, 51.0447], value: 45 },  // Calgary, Canada
+        { coordinates: [-52.7126, 47.5615], value: 47 },   // St John's, Canada
+        { coordinates: [-66.6431, 45.9636], value: 36 },   // Fredricton, Canada
+        { coordinates: [-73.5673, 45.5017], value: 20 },   // Montreal, Canada
+        { coordinates: [-63.1311, 46.2382], value: 17 },   // Charlottetown, Canada
+        { coordinates: [-97.1384, 49.8951], value: 35 },   // Winnipeg, Canada
+        { coordinates: [-70.6693, -33.4489], value: 9 },   // Santiago, Chile
+        { coordinates: [114.1694, 22.3193], value: 11 },   // Hong Kong, China
+        { coordinates: [-74.0721, 4.711], value: 113 },    // Bogota, D.C., Colombia
+        { coordinates: [-84.0907, 9.9281], value: 40 },    // San Jose, Costa Rica
+        { coordinates: [14.4422, 45.3271], value: 12 },    // Rijeka, Croatia
+        { coordinates: [33.3823, 35.1856], value: 12 },    // Nicosia, Cyprus
+        { coordinates: [33.3823, 35.1856], value: 16 },    // Nicosia, Cyprus
+        { coordinates: [12.1821, 55.458], value: 26 },     // Koge, Denmark
+        { coordinates: [-69.9312, 18.4861], value: 8 },    // Santo Domingo, D.N., Dominican Republic
+        { coordinates: [-78.4678, -0.1807], value: 22 },   // Quito, Ecuador
+        { coordinates: [31.2611, 29.9672], value: 41 },    // El Nil-Maadi, Egypt
+        { coordinates: [177.4502, -17.6161], value: 10 },  // Lautoka, Fiji
+        { coordinates: [24.9354, 60.1695], value: 2 },     // Helsinki, Finland
+        { coordinates: [7.7521, 48.5734], value: 101 },    // Strasbourg, France
+        { coordinates: [2.3522, 48.8566], value: 42 },     // Paris, France
+        { coordinates: [5.3698, 43.2965], value: 2 },      // Marseille, France
+        { coordinates: [2.3522, 48.8566], value: 28 },     // Paris, France
+        { coordinates: [4.8357, 45.764], value: 23 },      // Lyon, France
+        { coordinates: [1.2611, 45.8336], value: 31 },     // Limoges, France
+        { coordinates: [2.3522, 48.8566], value: 17 },     // Paris, France
+        { coordinates: [2.3522, 48.8566], value: 5 },      // Paris, France
+        { coordinates: [9.9937, 53.5511], value: 78 },     // Hamburg, Germany
+        { coordinates: [11.582, 48.1351], value: 75 },     // Munich, Germany
+        { coordinates: [9.1829, 48.7758], value: 131 },    // Stuttgart, Germany
+        { coordinates: [6.7735, 51.2277], value: 26 },     // Dusseldorf, Germany
+        { coordinates: [-0.187, 5.6037], value: 7 },       // Accra, Ghana
+        { coordinates: [23.7275, 37.9838], value: 17 },    // Athens, Greece
+        { coordinates: [24.8093, 35.2401], value: 6 },     // Crete, Greece
+        { coordinates: [23.7275, 37.9838], value: 14 },    // Athens, Greece
+        { coordinates: [-90.5069, 14.6349], value: 19 },   // Guatemala City, Guatemala
+        { coordinates: [-87.1921, 14.0723], value: 42 },   // Tegucigalpa MDC, Honduras
+        { coordinates: [114.1694, 22.3193], value: 76 },   // Hong Kong, Hong Kong
+        { coordinates: [114.1694, 22.3193], value: 13 },   // Hong Kong, Hong Kong
+        { coordinates: [19.0402, 47.4979], value: 43 },    // Budapest, Hungary
+        { coordinates: [19.0402, 47.4979], value: 2 },     // Budapest, Hungary
+        { coordinates: [-21.9426, 64.1466], value: 4 },    // Reykjavik, Iceland
+        { coordinates: [77.209, 28.6139], value: 60 },     // New Delhi, India
+        { coordinates: [77.5946, 12.9716], value: 16 },    // Bangalore, India
+        { coordinates: [106.8456, -6.2088], value: 65 },   // Jakarta, Indonesia
+        { coordinates: [34.7818, 32.0853], value: 25 },    // Tel Aviv, Israel
+        { coordinates: [9.19, 45.4642], value: 10 },       // Milan, Italy
+        { coordinates: [12.4964, 41.9028], value: 11 },    // Rome, Italy
+        { coordinates: [11.2558, 43.7696], value: 3 },     // Florence, Italy
+        { coordinates: [7.6869, 45.0703], value: 5 },      // Torino, Italy
+        { coordinates: [13.2346, 46.0624], value: 6 },     // Udine, Italy
+        { coordinates: [8.9463, 44.4056], value: 4 },      // Genoa, Italy
+        { coordinates: [14.2681, 40.8518], value: 4 },     // Naples, Italy
+        { coordinates: [139.6503, 35.6762], value: 49 },   // Tokyo, Japan
+        { coordinates: [139.6503, 35.6762], value: 4 },    // Tokyo, Japan
+        { coordinates: [35.9284, 31.9454], value: 20 },    // Amman, Jordan
+        { coordinates: [36.8219, -1.2921], value: 36 },    // Nairobi, Kenya
+        { coordinates: [35.5018, 33.8938], value: 51 },    // Beirut, Lebanon
+        { coordinates: [6.1335, 49.5825], value: 10 },     // Howald, Luxembourg
+        { coordinates: [101.6869, 3.139], value: 83 },     // Kuala Lumpur, Malaysia
+        { coordinates: [14.4666, 35.8956], value: 10 },    // Balzan, Malta
+        { coordinates: [57.5012, -20.1609], value: 17 },   // Port Louis, Mauritius
+        { coordinates: [-99.1332, 19.4326], value: 82 },   // Mexico City, Mexico
+        { coordinates: [-99.1332, 19.4326], value: 70 },   // Mexico City, Mexico
+        { coordinates: [-99.1332, 19.4326], value: 7 },    // Mexico City, Mexico
+        { coordinates: [-106.0889, 28.6353], value: 55 },  // Chihuahua, Mexico
+        { coordinates: [-98.2063, 19.0414], value: 3 },    // Puebla, Mexico
+        { coordinates: [-99.1332, 19.4326], value: 11 },   // Mexico City, Mexico
+        { coordinates: [-100.3161, 25.6866], value: 30 },  // Monterrey, Mexico
+        { coordinates: [-100.3899, 20.5888], value: 34 },  // Queretaro, Mexico
+        { coordinates: [-100.3161, 25.6866], value: 16 },  // Monterrey, Mexico
+        { coordinates: [-110.9559, 29.0729], value: 20 },  // Hermosillo, Mexico
+        { coordinates: [-100.3161, 25.6866], value: 8 },   // Monterrey, Mexico
+        { coordinates: [-108.985, 25.793], value: 24 },    // Los Mochis, Mexico
+        { coordinates: [-110.3128, 24.1426], value: 18 },  // La Paz, Mexico
+        { coordinates: [-101.6862, 21.1222], value: 21 },  // Leon, Mexico
+        { coordinates: [-115.4686, 32.6519], value: 32 },  // Mexicali, Mexico
+        { coordinates: [-117.0382, 32.5149], value: 5 },   // Tijuana, Mexico
+        { coordinates: [-7.9811, 31.6295], value: 50 },    // Marrakesh, Morocco
+        { coordinates: [96.1951, 16.8661], value: 15 },    // Yangon, Myanmar
+        { coordinates: [85.324, 27.7172], value: 36 },     // Kathmandu, Nepal
+        { coordinates: [5.6654, 51.9692], value: 743 },    // Wageningen, Netherlands
+        { coordinates: [174.7633, -36.8485], value: 32 },  // Auckland, New Zealand
+        { coordinates: [-86.2362, 12.115], value: 11 },    // Managua, Nicaragua
+        { coordinates: [3.3792, 6.5244], value: 9 },       // Lagos, Nigeria
+        { coordinates: [3.3792, 6.5244], value: 7 },       // Lagos, Nigeria
+        { coordinates: [10.7522, 59.9139], value: 11 },    // Oslo, Norway
+        { coordinates: [58.4333, 23.6035], value: 8 },     // Qurum, Oman
+        { coordinates: [74.3436, 31.5497], value: 90 },    // Lahore, Pakistan
+        { coordinates: [-79.5199, 8.9824], value: 9 },     // Panama City, Panama
+        { coordinates: [147.1494, -9.478], value: 13 },    // Port Moresby, Papua New Guinea
+        { coordinates: [-77.0428, -12.0464], value: 15 },  // Lima, Perú
+        { coordinates: [121.0561, 14.5352], value: 35 },   // Bonifacio Global City, Philippines
+        { coordinates: [19.945, 50.0647], value: 81 },     // Krakow, Poland
+        { coordinates: [19.0238, 50.2649], value: 44 },    // Katowice, Poland
+        { coordinates: [-9.1393, 38.7223], value: 28 },    // Lisbon, Portugal
+        { coordinates: [-8.6291, 41.1579], value: 10 },    // Porto, Portugal
+        { coordinates: [-66.1057, 18.4655], value: 55 },   // San Juan, Puerto Rico
+        { coordinates: [26.1025, 44.4268], value: 7 },     // Bucharest, Romania
+        { coordinates: [37.6173, 55.7558], value: 135 },   // Moscow, Russian Federation
+        { coordinates: [50.1971, 26.2172], value: 38 },    // Al-Khobar, Saudi Arabia
+        { coordinates: [-17.4677, 14.7167], value: 13 },   // Dakar, Senegal
+        { coordinates: [20.4489, 44.7866], value: 54 },    // Belgrade, Serbia
+        { coordinates: [103.8198, 1.3521], value: 30 },    // Singapore
+        { coordinates: [103.8198, 1.3521], value: 11 },    // Singapore
+        { coordinates: [103.8198, 1.3521], value: 23 },    // Singapore
+        { coordinates: [103.8198, 1.3521], value: 17 },    // Singapore
+        { coordinates: [28.0498, -26.1538], value: 49 },   // Houghton, South Africa
+        { coordinates: [-3.7038, 40.4168], value: 124 },   // Madrid, Spain
+        { coordinates: [2.1734, 41.3851], value: 30 },     // Barcelona, Spain
+        { coordinates: [18.0686, 59.3293], value: 20 },    // Stockholm, Sweden
+        { coordinates: [14.1567, 56.0294], value: 14 },    // Kristianstad, Sweden
+        { coordinates: [12.5333, 57.9306], value: 9 },     // Alingsås, Sweden
+        { coordinates: [13.9389, 56.8333], value: 3 },     // Ljungby, Sweden
+        { coordinates: [15.2134, 59.2753], value: 4 },     // Orbro, Sweden
+        { coordinates: [8.5417, 47.3769], value: 36 },     // Zürich, Switzerland
+        { coordinates: [8.5417, 47.3769], value: 5 },      // Zürich, Switzerland
+        { coordinates: [8.9511, 46.0037], value: 4 },      // Lugano, Switzerland
+        { coordinates: [121.5654, 25.033], value: 75 },    // Taipei, Taiwan
+        { coordinates: [100.5018, 25.033], value: 20 },    // Bangkok, Thailand
+        { coordinates: [28.9784, 41.0082], value: 10 },    // Istanbul, Turkey
+        { coordinates: [28.9784, 41.0082], value: 3 },     // Istanbul, Turkey
+        { coordinates: [55.2962, 25.276], value: 61 },     // Dubai, UAE
+        { coordinates: [32.5825, 0.3476], value: 11 },     // Kampala, Uganda
+        { coordinates: [30.5234, 50.4501], value: 3 },     // Kyiv, Ukraine
+        { coordinates: [30.5234, 50.4501], value: 4 },     // Kyiv, Ukraine
+        { coordinates: [-84.388, 33.749], value: 318 },    // Atlanta, USA
+        { coordinates: [-118.2437, 34.0522], value: 181 }, // Los Angeles, USA
+        { coordinates: [-78.6569, 37.4316], value: 169 },  // Virginia, USA
+        { coordinates: [-93.3499, 44.8897], value: 170 },  // Edina, USA
+        { coordinates: [-95.3698, 29.7604], value: 77 },   // Houston, USA
+        { coordinates: [-122.6793, 45.5155], value: 127 }, // Portland, USA
+        { coordinates: [-88.1535, 41.7508], value: 178 },  // Naperville, USA
+        { coordinates: [-79.792, 36.0726], value: 109 },   // Greensboro, USA
+        { coordinates: [-76.6122, 36.0726], value: 53 },   // Baltimore, USA
+        { coordinates: [-117.8265, 33.6846], value: 36 },  // Irvine, USA
+        { coordinates: [-73.4985, 41.2815], value: 35 },   // Ridgefield, USA
+        { coordinates: [-120.7401, 47.7511], value: 32 },  // Washington, USA
+        { coordinates: [-88.0399, 30.6954], value: 39 },   // Mobile, USA
+        { coordinates: [-84.512, 39.1031], value: 26 },    // Cincinnati, USA
+        { coordinates: [-110.9747, 32.2226], value: 32 },  // Tucson, USA
+        { coordinates: [-73.6918, 42.7284], value: 22 },   // Troy, USA
+        { coordinates: [-96.8236, 33.1507], value: 12 },   // Frisco, USA
+        { coordinates: [-149.9003, 61.2181], value: 14 },  // Anchorage, USA
+        { coordinates: [-122.7141, 38.4404], value: 21 },  // Santa Rosa, USA
+        { coordinates: [-73.7562, 42.6526], value: 12 },   // Albany, USA
+        { coordinates: [-71.0589, 42.3601], value: 8 },    // Boston, USA
+        { coordinates: [168.3273, -17.7333], value: 16 },  // Port Vila, Vanuatu
+        { coordinates: [105.8542, 21.0285], value: 80 },   // Hanoi, Vietnam
+        { coordinates: [44.191, 15.3694], value: 7 },      // Sana'a, Yemen
+        { coordinates: [28.3228, -15.3875], value: 4 },    // Lusaka, Zambia
+        { coordinates: [-0.1275, 51.5072], value: 287 },   // London, United Kingdom
+        { coordinates: [-0.1275, 51.5072], value: 74 },    // London, United Kingdom
+        { coordinates: [-1.25, 51.75], value: 126 },       // Oxford, United Kingdom
+        { coordinates: [-2.2452, 53.479], value: 77 },     // Manchester, United Kingdom
+        { coordinates: [-2.865, 53.374], value: 83 },      // Liverpool, United Kingdom
+        { coordinates: [-1.5358, 52.2919], value: 80 },    // Leamington Spa, United Kingdom
+        { coordinates: [-1.478, 53.7485], value: 62 },     // Leeds, United Kingdom
+        { coordinates: [-1.4042, 50.9025], value: 47 },    // Southampton, United Kingdom
+        { coordinates: [-4.1147, 55.8474], value: 39 },    // Glasgow, United Kingdom
+        { coordinates: [-1.4698, 53.4429], value: 28 },    // Sheffield, United Kingdom
+        { coordinates: [-5.93, 54.5964], value: 23 },      // Belfast, United Kingdom
+        { coordinates: [-4.548056, 54.236107], value: 3 }, // Isle of Man, United Kingdom
+        { coordinates: [1.08, 51.28], value: 8 },          // Canterbury, United Kingdom
+        { coordinates: [-1.829, 52.682], value: 8 },       // Lichfield, United Kingdom
+        { coordinates: [-8.47, 51.8972], value: 98 },      // Cork, Ireland
+        { coordinates: [-77.1945, 41.2033], value: 41 },   // Pennsylvania, USA
+        { coordinates: [-76.1474, 43.0481], value: 52 }    // Syracuse, USA
+   ];
+
+    // Adding the markers to the map
+    locations.forEach(function(location) {
+        var size = Math.min(location.value / 10, 20); // Adjust size here, capped at 20px
+        var el = document.createElement('div');
+        el.className = 'marker';
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+
+        new mapboxgl.Marker(el)
+            .setLngLat(location.coordinates)
+            .addTo(map);
+    });
+</script>
+
+</body>
+</html>
